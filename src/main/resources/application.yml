@@ -1,0 +1,24 @@
+server:
+  port: 9191
+
+spring:
+  application:
+    name: api-gateway
+  profiles:
+    active: dev
+  cloud:
+    gateway:
+      routes:
+        - id: person-service
+          uri: lb://person-service
+          predicates:
+            - Path=/people/**
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://service-registry:8761/eureka/
+  instance:
+    prefer-ip-address: true
