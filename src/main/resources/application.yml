@@ -10,7 +10,7 @@ spring:
     gateway:
       routes:
         - id: person-service
-          uri: lb://person-service
+          uri: lb://PERSON-SERVICE
           predicates:
             - Path=/people/**
 
@@ -19,6 +19,6 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: http://service-registry:8761/eureka/
+      defaultZone: http://eureka-server:8761/eureka/
   instance:
     prefer-ip-address: true
