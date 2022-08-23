@@ -60,7 +60,7 @@ services:
     depends_on:
       - naming-server
     environment:
-      EUREKA_CLIENT.SERVICEURL.DEFAULTZONE: http://naming-server:8761/eureka
+      EUREKA.CLIENT.SERVICE-URL.DEFAULTZONE: http://naming-server:8761/eureka
       SPRING.ZIPKIN.BASEURL: http://zipkin-server:9411/
     networks:
       - anderson-network
@@ -73,7 +73,7 @@ services:
       dockerfile: cambio-service/Dockerfile
     environment:
       TZ: America/Sao_Paulo
-      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://naming-server:8761/eureka
+      EUREKA.CLIENT.SERVICE-URL.DEFAULTZONE: http://naming-server:8761/eureka
       SPRING.ZIPKIN.BASEURL: http://zipkin-server:9411/
       SPRING.APPLICATION.NAME: cambio-service
       SPRING.DATASOURCE.URL: jdbc:mysql://cambio-db:3308/cambio_service?useSSL=false&serverTimeZone=UTC&enabledTLSProtocols=TLSv1.2
@@ -98,7 +98,7 @@ services:
       dockerfile: book-service/Dockerfile
     environment:
       TZ: America/Sao_Paulo
-      EUREKACLIENT.SERVICEURL.DEFAULTZONE: http://naming-server:8761/eureka
+      EUREKA.CLIENT.SERVICE-URL.DEFAULTZONE: http://naming-server:8761/eureka
       SPRING.ZIPKIN.BASEURL: http://zipkin-server:9411/
       SPRING.APPLICATION.NAME: book-service
       SPRING.DATASOURCE.URL: jdbc:mysql://book-db:3310/book_service?useSSL=false&serverTimezone=UTC&enabledTLSProtocols=TLSv1.2
