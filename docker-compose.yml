@@ -1,0 +1,120 @@
+version: '3.4'
+
+services:
+  zipkin-server:
+    image: openzipkin/zipkin:2.23.2
+    ports:
+      - 9411:9411
+    networks:
+      - anderson-network
+  
+  cambio-db:
+    image: mysql:5.7.38
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      TZ: America/Sao_Paulo
+      MYSQL_ROOT_PASSWORD: Anderson@170183
+      MYSQL_USER: anderson
+      MYSQL_PASSWORD: Anderson@170183
+      MYSQL_DATABASE: cambio_service
+      MYSQL_ROOT_HOST: '%'
+      MYSQL_TCP_PORT: 3308
+    ports:
+      - 3308:3308
+    expose: 
+      - 3308
+    networks: 
+      - anderson-network
+
+  book-db:
+    image: mysql:5.7.38
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      TZ: America/Sao_Paulo
+      MYSQL_ROOT_PASSWORD: Anderson@170183
+      MYSQL_USER: anderson
+      MYSQL_PASSWORD: Anderson@170183
+      MYSQL_DATABASE: book_service
+      MYSQL_ROOT_HOST: '%'
+      MYSQL_TCP_PORT: 3310
+    ports:
+      - 3310:3310
+    expose: 
+      - 3310
+    networks: 
+      - anderson-network
+  
+  naming-server:
+    image: arods/naming-server:0.0.1-SNAPSHOT
+    ports:
+      - 8761:8761
+    networks:
+      - anderson-network
+  
+  api-gateway:
+    image: arods/api-gateway:0.0.1-SNAPSHOT
+    ports:
+      - 8765:8765
+    depends_on:
+      - naming-server
+    environment:
+      EUREKA_CLIENT.SERVICEURL.DEFAULTZONE: http://naming-server:8761/eureka
+      SPRING.ZIPKIN.BASEURL: http://zipkin-server:9411/
+    networks:
+      - anderson-network
+  
+  cambio-service:
+    image: arods/cambio-service
+    restart: always
+    build:
+      context: .
+      dockerfile: cambio-service/Dockerfile
+    environment:
+      TZ: America/Sao_Paulo
+      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://naming-server:8761/eureka
+      SPRING.ZIPKIN.BASEURL: http://zipkin-server:9411/
+      SPRING.APPLICATION.NAME: cambio-service
+      SPRING.DATASOURCE.URL: jdbc:mysql://cambio-db:3308/cambio_service?useSSL=false&serverTimeZone=UTC&enabledTLSProtocols=TLSv1.2
+      SPRING.DATASOURCE.USERNAME: anderson
+      SPRING.DATASOURCE.PASSWORD: Anderson@170183  
+      SPRING.FLYWAY.URL: jdbc:mysql://cambio-db:3308/cambio_service?useSSL=false&serverTimeZone=UTC&enabledTLSProtocols=TLSv1.2
+      SPRING.FLYWAY.USER: anderson
+      SPRING.FLYWAY.PASSWORD: Anderson@170183
+    ports:
+      - 8000:8000
+    depends_on:
+      - naming-server
+      - cambio-db
+    networks: 
+      - anderson-network
+
+  book-service:
+    image: arods/book-service
+    restart: always
+    build:
+      context: .
+      dockerfile: book-service/Dockerfile
+    environment:
+      TZ: America/Sao_Paulo
+      EUREKACLIENT.SERVICEURL.DEFAULTZONE: http://naming-server:8761/eureka
+      SPRING.ZIPKIN.BASEURL: http://zipkin-server:9411/
+      SPRING.APPLICATION.NAME: book-service
+      SPRING.DATASOURCE.URL: jdbc:mysql://book-db:3310/book_service?useSSL=false&serverTimezone=UTC&enabledTLSProtocols=TLSv1.2
+      SPRING.DATASOURCE.USERNAME: anderson
+      SPRING.DATASOURCE.PASSWORD: Anderson@170183
+      SPRING.FLYWAY.URL: jdbc:mysql://book-db:3310/book_service?useSSL=false&serverTimezone=UTC&enabledTLSProtocols=TLSv1.2
+      SPRING.FLYWAY.USER: anderson
+      SPRING.FLYWAY.PASSWORD: Anderson@170183
+    ports:
+      - 8100:8100
+    depends_on:
+      - naming-server
+      - book-db
+    networks:
+      - anderson-network
+
+networks:
+  anderson-network: 
+    driver: bridge
